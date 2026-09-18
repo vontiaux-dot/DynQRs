@@ -46,11 +46,22 @@
     const params = new URLSearchParams(window.location.search);
     const k = params.get('k');
 
+    // Apps Script llama a esta función con el destino, en segundo plano.
+    function vontiaCallback(data) {
+      if (data && data.url) {
+        window.location.replace(data.url);
+      } else {
+        document.body.innerHTML = '<p style="color:white">Código no válido.</p>';
+      }
+    }
+
     if (k) {
-      // Navegación directa, SIN fetch. script.google.com bloquea fetch()
-      // cross-origin (CORS), pero una navegación normal de página sí funciona,
-      // porque el Apps Script hace su propio redirect vía meta-refresh.
-      document.location.replace(AS_URL_BASE + '?k=' + encodeURIComponent(k));
+      // Cargamos el Apps Script como un <script> en segundo plano,
+      // NO como una navegación de página. Así el navegador nunca
+      // "visita" script.google.com y el aviso de Google no aparece.
+      const s = document.createElement('script');
+      s.src = AS_URL_BASE + '?k=' + encodeURIComponent(k);
+      document.body.appendChild(s);
     } else {
       document.body.innerHTML = '<p style="color:white">Código no válido.</p>';
     }
